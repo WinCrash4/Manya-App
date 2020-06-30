@@ -1,0 +1,21 @@
+{
+    "urls": {
+        "weather_api": "http://api.openweathermap.org/data/2.5/weather?appid=0c42f7f6b53b244c78a418f4f181282a&q=Petrozavodsk",
+        "wikipedia": {
+            "search": "https://ru.wikipedia.org/w/index.php",
+            ".": "https://ru.wikipedia.org/"
+        }
+    },
+    "data": {
+        "wikipedia_search": {
+            "cirrusUserTesting": "glent_m0",
+            "sort": "relevance",
+            "search": "textHere",
+            "title": "Special:Search",
+            "profile": "advanced",
+            "fulltext": "1",
+            "advancedSearch-current": "{}",
+            "ns0": "1"
+        }
+    }
+}
