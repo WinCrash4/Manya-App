@@ -1,22 +1,10 @@
-from kivy.app import App
-from kivy.properties import ObjectProperty
-from kivy.uix.screenmanager import Screen
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.config import ConfigParser, Config
-from kivy.factory import Factory    
-
-from kivy.lang import Builder
-from kivy.core.window import Window
-
-from program import *
-
-import threading
+from imports_and_classes import *
 
 Builder.load_file('ui.kv')
 
 class ScrollScreen(Screen):
     _app = ObjectProperty()
+    threadRunning = NumericProperty(0)
     JsonData.getDataFromFile("Settings", "data/settings.json")
     JsonData.getDataFromFile("AppData", "data/appdata.json")
     JsonData.getDataFromFile("CommandsData", "data/commandsdata.json")
@@ -47,14 +35,13 @@ class ScrollScreen(Screen):
             speech = self.speechRecognition.recognize()
             recognizedText = str(speech["text"]).lower()
 
-
             if speech["error"]:
                 self.logger.log(speech["text"])
                 continue
 
             else:
                 self.logger.log("Recognized text: " + recognizedText)
-                container.add_widget(UserTextLabel(text=recognizedText))
+                container.add_widget(UserTextLabel(text=recognizedText.capitalize()))
 
             for trash in self.appData["alias"]:
                 recognizedText = recognizedText.replace(trash, "")
@@ -65,30 +52,37 @@ class ScrollScreen(Screen):
             # Распознаём и выполняем комманду
             
             answer = APP.executeCommand(CommandRecognition.recognizeCommand(recognizedText))
-            container.add_widget(AnswerTextLabel(text=answer))
-            self.pronounce(answer)
+            container.add_widget(AnswerTextLabel(text=answer["display"]))
+            self.pronounce(answer["pronounce"])
 
     def start_thread(self):
-        thread = threading.Thread(target=self.exec)
-        thread.setDaemon(True)
-        thread.start()
+        self.threadRunning = 1
+        self.thread = threading.Thread(target=self.exec)
+        self.thread.setDaemon(True)
+        self.thread.start()
 
-class StartMenu(App):
+    def get_help(self):
+        pattern = PopupContent()
+        pattern.fill_with_content()
+        popupWindow = Popup(title="Как работать с Маней", content=pattern, size_hint=(0.8, 0.8)) 
+        #closeBtn = pattern.ids.close
+        #closeBtn.bind(on_press = popupWindow.dismiss)  
+        popupWindow.open() # show the popup
+
+    def boom():
+        a = 228/0
+
+class StartMenu(MDApp):
     def __init__(self, **kvargs):
         super(StartMenu, self).__init__(**kvargs)    
         self.config = ConfigParser()
         self.screen_manager = Factory.ManagerScreens()
+    
     def build(self):
         return self.screen_manager
+
+    def change_screen(self, screenName):
+        self.screen_manager.current = screenName
     
-class UserTextLabel(Label):
-    pass
-
-class AnswerTextLabel(Label):
-    pass
-
-class ScrollButton(Button):
-    pass
-
 if __name__ == '__main__':
     StartMenu().run()

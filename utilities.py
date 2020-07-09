@@ -12,7 +12,7 @@ def removeAlphaDigits(s):
 
 
 def remove_keywords(text, command):
-    for phrase in JsonData.get("AppData")["commands"][command]:
+    for phrase in JsonData.get("AppData")["commands"][command][1]:
         text = text.replace(phrase, '')
         
     return text

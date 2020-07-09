@@ -8,11 +8,11 @@ class CommandRecognition:
         matchingWordCount = 0
         isBreak = False
 
-        for cmd, phrases in JsonData.get("AppData")["commands"].items():
+        for cmd, infoAndPhrases in JsonData.get("AppData")["commands"].items():
             if isBreak:
                 break
 
-            for phrase in phrases:
+            for phrase in infoAndPhrases[1]:
                 if recognizedText.startswith(phrase):
                     command["command"] = cmd
                     isBreak = True

@@ -30,8 +30,6 @@ class Program:
         self.logger = Logger(pathToFolder="logs/")
 
         self.loopEnable = True
-        self.speechPronunciation = SpeechPronunciation(voiceIndex=0)
-        self.speechRecognition = SpeechRecognition(deviceIndex=1)
 
     def greetings(self):
         greeting = "Приветствую вас, {}".format(str(JsonData.get("Settings")["user"]["name"]))
@@ -47,21 +45,36 @@ class Program:
 
         if command == "hello":
             greetings = self.chooseRandomPhrase(self.appData["phrases"]["greeting"])
-            return greetings
+
+            return {"pronounce": greetings, "display": greetings}
 
         elif command == "ctime":
             time = datetime.now()
-            return "Сейчас " + str(time.hour) + ":" + str(time.minute) + ":" + str(time.second) 
+            time = "Сейчас " + str(time.hour) + ":" + str(time.minute) + ":" + str(time.second) 
+            return {"pronounce": time, "display": time}
+
+        elif command == "all_commands_info":
+            pronounce = self.chooseRandomPhrase(self.appData["phrases"]["all_commands_info"]) + '\n'
+            display = pronounce
+
+            for _, infoAndPhrases in JsonData.get("AppData")["commands"].items():
+                if infoAndPhrases[0] != "hidden":
+                    display += "{} - {}\n".format(infoAndPhrases[0], ", ".join(Random.sample(infoAndPhrases[1], 2)))
+            return {"pronounce": pronounce, "display": display}
 
         elif command == "music":
             musicIndex = 0
             matchingNamesCount = 0
             matchingWordsCount = 0
-            musicDirectory = "E:\Desktop\Мьюзик\\"
+            musicDirectory = str(JsonData.get("Settings")["user"]["music_folder"])
+
+            if musicDirectory == "":
+                res = "Папка с музыкой не назначена"
+                return {"pronounce": res, "display": res}
 
             recognizedText = remove_keywords(recognizedText, "music")
             
-            if len(recognizedText) != 0: # if the user didn"t say the name of the music
+            if len(recognizedText) != 0: # if the user didn't told the name of the music
                 for index, item in enumerate(OS.listdir(path = musicDirectory)):
                     for word in item.lower()[:-4].split(" "):
                         if word in recognizedText.lower().split(" ")[1:]:
@@ -76,14 +89,17 @@ class Program:
                     matchingWordsCount = 0
 
                 if matchingNamesCount == 0:
-                    self.pronounce("Я не нашла музыку с таким названием")
+                    res = "Я не нашла музыку с таким названием"
+                    return {"pronounce": res, "display": res}
 
                 elif matchingNamesCount == 1:
                     OS.startfile(musicDirectory + OS.listdir(path = musicDirectory)[musicIndex])
-                    self.pronounce("Включаю музыку")
+                    res = "Включаю музыку"
+                    return {"pronounce": res, "display": res}
 
                 elif matchingNamesCount > 1:
-                    self.pronounce("Здесь слишком много песен с таким названием, уточните свой запрос")
+                    res = "Здесь слишком много песен с таким названием, уточните свой запрос"
+                    return {"pronounce": res, "display": res}
 
                 matchingNamesCount = 0
 
@@ -91,8 +107,9 @@ class Program:
                 musicIndex = Random.randint(0,len(OS.listdir(path = musicDirectory)))
                 while OS.listdir(path = musicDirectory)[musicIndex][-4:] != ".mp3":
                     musicIndex = Random.randint(0,len(OS.listdir(path = musicDirectory)))
-                self.pronounce("Включаю музыку")
+                res = "Включаю музыку"
                 OS.startfile(musicDirectory + OS.listdir(path = musicDirectory)[musicIndex])
+                return {"pronounce": res, "display": res}
 
         elif command == "music_disable":
             for pid in (process.pid for process in PSUtil.process_iter() if process.name() == "AIMP.exe"):
@@ -100,16 +117,19 @@ class Program:
             self.pronounce("Музыка выключена")
 
         elif command == "joke":
-            jokes = jsonLoad(file.read())["jokes"]
-            return self.chooseRandomPhrase(jokes)
+            jokes = jsonLoad(file.read())["jokes"] 
+            joke = self.chooseRandomPhrase(jokes)
+            return {"pronounce": joke, "display": joke}
 
         elif command == "thanks":
-            thanks = self.appData["phrases"]["thanks"]
-            return self.chooseRandomPhrase(thanks)
+            thanks = self.appData["phrases"]["thanks"] 
+            res = self.chooseRandomPhrase(thanks)
+            return {"pronounce": res, "display": res}
 
         elif command == "compliment":
-            compliments = self.appData["phrases"]["compliment"]
-            return self.chooseRandomPhrase(compliments)
+            compliments = self.appData["phrases"]["compliment"] 
+            compliment = self.chooseRandomPhrase(compliments)
+            return {"pronounce": compliment, "display": compliment}
 
         elif command == "translate":
             textToTranslate = remove_keywords(recognizedText, "translate")
@@ -124,9 +144,10 @@ class Program:
 
             try:
                 translation = Translator().translate(textToTranslate, dest=fromLanguage, src=toLanguage)
-                return translation.text
+                return {"pronounce": translation.text, "display": translation.text}
             except:
                 self.logger.log("Error: Check internet connection.")
+                return {"pronounce": "Ошибка интернет-соединения", "display": "Ошибка интернет-соединения"}    
 
         elif command == "weather":
             url = self.commandsData["urls"]["weather_api"]
@@ -156,23 +177,29 @@ class Program:
                 elif t >= 2 and t <= 4: degreesForm = wordForms[1]
                 else: degreesForm = wordForms[2]
 
-            return "{} {} по цельсию, {}".format(temperature, degreesForm, status)
+            res = "{} {} по цельсию, {}".format(temperature, degreesForm, status)
+
+            return {"pronounce": res, "display": res} 
 
         elif command == "wiki":
             recognizedText = remove_keywords(recognizedText, "wiki")
+            if recognizedText == "":
+                res = "Пожалуйста, повторите ваш запрос"
+                return {"pronounce": res, "display": res}
 
             try:
-                text = erase_all_between_characters('(',')',Wikipedia.summary(recognizedText, sentences=2).replace('\u0301', ''))
-                return text
+                text = erase_all_between_characters('(',')',Wikipedia.summary(recognizedText, sentences=3).replace('\u0301', ''))
+                return {"pronounce": text, "display": text}
             except:
                 titles = Wikipedia.search(recognizedText)
 
                 if len(titles) > 0:
                     page = erase_all_between_characters('(',')',Wikipedia.page(Wikipedia.search(titles[0])[0]))
-                    return page.summary.split('\n')[:2]
+                    return {"pronounce": page.summary.split('\n')[:2], "display": page.summary.split('\n')[:2]}
                     
                 else:
-                    return "Извините, я не смогла найти информацию по вашему запросу."
+                    res = "Извините, я не смогла найти информацию по вашему запросу."
+                    return {"pronounce": res, "display": res}
 
         elif command == "when_happen":
             recognizedText = remove_keywords(recognizedText, "when_happen")
@@ -192,10 +219,12 @@ class Program:
                 if "г" not in eventDate:
                     eventDate += " года"
 
-                return eventDate.replace("г.", "года").replace("\n", "")
+                res = eventDate.replace("г.", "года").replace("\n", "")
+                return {"pronounce": res, "display": res}
 
             except:
-                return "Извините, я не смогла найти информацию по вашему запросу."
+                res = "Извините, я не смогла найти информацию по вашему запросу."
+                return {"pronounce": res, "display": res}
 
         elif command == "change_name":
             recognizedText = remove_keywords(recognizedText, "change_name")
@@ -205,7 +234,9 @@ class Program:
             JsonData.saveDataToFile("Settings")
             
             phrases = self.appData["phrases"]["change_name"]
-            return "{} {}".format(self.chooseRandomPhrase(phrases), username)
+            res = "{} {}".format(self.chooseRandomPhrase(phrases), username)
+            return {"pronounce": res, "display": res}
 
         else:
-            return "Команда не была распознана"
+            res = "Команда не была распознана"
+            return {"pronounce": res, "display": res}
