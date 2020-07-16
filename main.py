@@ -25,6 +25,7 @@ class ScrollScreen(Screen):
         APP = Program()
 
         greeting = APP.greetings().split('\n')
+
         container.add_widget(AnswerTextLabel(text=greeting[0]))
         self.pronounce(greeting[0])
 
@@ -41,7 +42,8 @@ class ScrollScreen(Screen):
 
             else:
                 self.logger.log("Recognized text: " + recognizedText)
-                container.add_widget(UserTextLabel(text=recognizedText.capitalize()))
+                msg = UserTextLabel(text=recognizedText.capitalize())
+                container.add_widget(msg)
 
             for trash in self.appData["alias"]:
                 recognizedText = recognizedText.replace(trash, "")
@@ -51,8 +53,24 @@ class ScrollScreen(Screen):
 
             # Распознаём и выполняем комманду
             
-            answer = APP.executeCommand(CommandRecognition.recognizeCommand(recognizedText))
-            container.add_widget(AnswerTextLabel(text=answer["display"]))
+            command = CommandRecognition.recognizeCommand(recognizedText)
+            answer = APP.executeCommand(command)
+
+            if command['command'] == "music" and answer["music_name"] != None:
+                for child in self.children: # for the case if music already plays 
+                    if child.id == "music_player":
+                        self.remove_widget(child)
+                        child.plays(forcedStop = True)
+                        child.unload_audio() 
+                        
+                self.musicPlayer = MusicPlayer(id="music_player", music_name=answer["music_name"])
+                self.musicPlayer.init_audio()
+                self.add_widget(self.musicPlayer, index=0)
+                self.musicPlayer.plays()
+
+            msg = AnswerTextLabel(text=answer["display"])
+            container.add_widget(msg)
+
             self.pronounce(answer["pronounce"])
 
     def start_thread(self):
@@ -65,12 +83,7 @@ class ScrollScreen(Screen):
         pattern = PopupContent()
         pattern.fill_with_content()
         popupWindow = Popup(title="Как работать с Маней", content=pattern, size_hint=(0.8, 0.8)) 
-        #closeBtn = pattern.ids.close
-        #closeBtn.bind(on_press = popupWindow.dismiss)  
-        popupWindow.open() # show the popup
-
-    def boom():
-        a = 228/0
+        popupWindow.open()
 
 class StartMenu(MDApp):
     def __init__(self, **kvargs):
@@ -79,10 +92,23 @@ class StartMenu(MDApp):
         self.screen_manager = Factory.ManagerScreens()
     
     def build(self):
+        #self.theme_cls.theme_style = "Dark"
+        self.title = 'Manya'
         return self.screen_manager
 
     def change_screen(self, screenName):
         self.screen_manager.current = screenName
+
+    def close_music_player(self):
+        main_screen = self.screen_manager.screens[1]
+
+        for child in main_screen.children:
+            if child.id == "music_player":
+                main_screen.remove_widget(child)
+                print(child.get_elapsed_time())
+                child.plays(forcedStop = True)
+                child.unload_audio()
     
 if __name__ == '__main__':
+    JsonData.getDataFromFile("Settings", "data/settings.json")
     StartMenu().run()

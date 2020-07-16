@@ -1,7 +1,7 @@
 # Импортируем классы
 from utilities import *
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from json import loads as jsonLoad
 from googletrans import Translator
 from random import randint as randomInteger
@@ -27,7 +27,6 @@ class Program:
         self.settings = JsonData.get("Settings")
         self.appData = JsonData.get("AppData")
         self.commandsData = JsonData.get("CommandsData")
-        self.logger = Logger(pathToFolder="logs/")
 
         self.loopEnable = True
 
@@ -70,11 +69,11 @@ class Program:
 
             if musicDirectory == "":
                 res = "Папка с музыкой не назначена"
-                return {"pronounce": res, "display": res}
+                return {"pronounce": res, "display": res, "music_name": None}
 
             recognizedText = remove_keywords(recognizedText, "music")
             
-            if len(recognizedText) != 0: # if the user didn't told the name of the music
+            if len(recognizedText) != 0: # for case if user didn't told the name of the music
                 for index, item in enumerate(OS.listdir(path = musicDirectory)):
                     for word in item.lower()[:-4].split(" "):
                         if word in recognizedText.lower().split(" ")[1:]:
@@ -90,16 +89,16 @@ class Program:
 
                 if matchingNamesCount == 0:
                     res = "Я не нашла музыку с таким названием"
-                    return {"pronounce": res, "display": res}
+                    musicName = None
 
                 elif matchingNamesCount == 1:
-                    OS.startfile(musicDirectory + OS.listdir(path = musicDirectory)[musicIndex])
+                    #OS.startfile(musicDirectory + OS.listdir(path = musicDirectory)[musicIndex])
                     res = "Включаю музыку"
-                    return {"pronounce": res, "display": res}
+                    musicName = str(OS.listdir(path = musicDirectory)[musicIndex])
 
                 elif matchingNamesCount > 1:
                     res = "Здесь слишком много песен с таким названием, уточните свой запрос"
-                    return {"pronounce": res, "display": res}
+                    musicName = None
 
                 matchingNamesCount = 0
 
@@ -108,8 +107,10 @@ class Program:
                 while OS.listdir(path = musicDirectory)[musicIndex][-4:] != ".mp3":
                     musicIndex = Random.randint(0,len(OS.listdir(path = musicDirectory)))
                 res = "Включаю музыку"
-                OS.startfile(musicDirectory + OS.listdir(path = musicDirectory)[musicIndex])
-                return {"pronounce": res, "display": res}
+                musicName = str(OS.listdir(path = musicDirectory)[musicIndex])
+                #OS.startfile(musicDirectory + OS.listdir(path = musicDirectory)[musicIndex])
+
+            return {"pronounce": res, "display": res, "music_name": musicName}
 
         elif command == "music_disable":
             for pid in (process.pid for process in PSUtil.process_iter() if process.name() == "AIMP.exe"):
@@ -146,7 +147,6 @@ class Program:
                 translation = Translator().translate(textToTranslate, dest=fromLanguage, src=toLanguage)
                 return {"pronounce": translation.text, "display": translation.text}
             except:
-                self.logger.log("Error: Check internet connection.")
                 return {"pronounce": "Ошибка интернет-соединения", "display": "Ошибка интернет-соединения"}    
 
         elif command == "weather":

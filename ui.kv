@@ -21,12 +21,7 @@
 
 <ScrollScreen>
     name: "main_screen"
-    canvas.before:
-        Color:
-            rgba: 1, 1, 1, 1
-        Rectangle:
-            pos: self.pos
-            size: self.size
+
     BoxLayout:
         orientation: 'vertical'
         MDToolbar:
@@ -34,17 +29,11 @@
             elevation: 10
             left_action_items: [["settings", lambda x: app.change_screen('settings_screen')]]
             right_action_items: [["play" if not root.threadRunning else "help", lambda x: root.start_thread() if not root.threadRunning else root.get_help()]]
-        # BoxLayout:
-        #     size_hint: (1, 0.1)
-        #     orientation: 'horizontal'
-        #     ScrollButton:
-        #         id: trash
-        #         text: 'Start'
-        #         on_press: root.start_thread(); self.disabled = True
+
         ScrollView:
             size_hint: 1, 1
-                
             pos_hint: {'center_x': .5, 'center_y': .5}
+            scroll_y: 0
 
             GridLayout:
                 id: container
@@ -55,21 +44,31 @@
                 size_hint: 1, None
                 do_scroll_x: False
 
+<MusicPlayer>
+    id: root.id
+    size_hint: (1, 0.08)
+    height: self.height if root.player_visible else 0
+    title: root.music_name.replace('/', '')
+    left_action_items: [["pause" if root.player_state == 1 else "play", lambda x: root.change_player_state()]]
+    right_action_items: [["close", lambda x: app.close_music_player()]]
+    md_bg_color: (0, 0, 0.4, 1)
+
 <SettingsScreen>
     name: 'settings_screen'
+
     BoxLayout:
         orientation: 'vertical'
-        spacing: 30
         MDToolbar:
-            title: "Settings"
+            title: root.title
             elevation: 10
             left_action_items: [["keyboard-backspace", lambda x: app.change_screen('main_screen')]]
 
         ScrollView:
             size_hint: 1, 1
-            pos_hint: {'center_x': .5, 'center_y': .55}
+            pos_hint: {'center_x': .5, 'center_y': .5}
 
             GridLayout:
+                id: container
                 cols: 1
                 padding: 4
                 spacing: 4
@@ -77,24 +76,12 @@
                 size_hint: 1, None
                 do_scroll_x: False
 
-                FloatLayout:
-                    SettingsItem:
-                        text: 'Hello'
-                        Button:
-                            size_hint: (1, None)
-                            pos_hint: {"x":1, "y":1}
-                            height: 32
-                            text: 'Load'
-                            on_press: root.show_load()
-
 <SettingsItem>:
-    size_hint: 1, None
-    text_size: root.width, None
-    size: self.texture_size
-    
+    text: root.text
+    secondary_text: root.secondaryText
 
-    color: 0, 0, 0, 1
-    padding: 8, 4
+    IconLeftWidget:
+        icon: root.icon
 
 <PopupContent>:
     canvas.before:
@@ -116,7 +103,7 @@
                 cols: 1
                 padding: 0
                 spacing: 0
-                height: self.minimum_height#sum(x.height+10 for x in self.children) + 96
+                height: self.minimum_height
                 size_hint: 1, None
                 do_scroll_x: False
 
@@ -126,12 +113,6 @@
                 height: self.minimum_height
                 size_hint: 1, None
 
-    # Button:
-    #     id: close
-    #     text: "OK"
-    #     size_hint: 0.8, 0.15
-    #     pos_hint: {"x":0.01, "y":0.01}
-
 <LoadDialog>:
     BoxLayout:
         size: root.size
@@ -139,17 +120,18 @@
         orientation: "vertical"
         FileChooserListView:
             id: filechooser
+            path: "E:\\"
 
         BoxLayout:
             size_hint_y: None
             height: 30
             Button:
                 id: closeBtn
-                text: "Cancel"
+                text: root.cancel_text
 
             Button:
                 id: loadBtn
-                text: "Load"
+                text: root.load_text
                 on_release: root.load(filechooser.path, filechooser.selection)
 
 <UserTextLabel>
