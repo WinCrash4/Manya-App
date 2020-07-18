@@ -1,6 +1,12 @@
 #:import threading threading
 
 <ManagerScreens@ScreenManager>:
+    canvas.before:
+        Color:
+            rgba: app.background
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
     MenuScreen:
         id: men
@@ -8,7 +14,6 @@
         id: main_screen
     SettingsScreen:
         id: settings_screen
-
 
 <MenuScreen@Screen>:
     name: "menu"
@@ -27,6 +32,7 @@
         MDToolbar:
             title: "Manya"
             elevation: 10
+            md_bg_color: app.toolbar_background
             left_action_items: [["settings", lambda x: app.change_screen('settings_screen')]]
             right_action_items: [["play" if not root.threadRunning else "help", lambda x: root.start_thread() if not root.threadRunning else root.get_help()]]
 
@@ -51,7 +57,7 @@
     title: root.music_name.replace('/', '')
     left_action_items: [["pause" if root.player_state == 1 else "play", lambda x: root.change_player_state()]]
     right_action_items: [["close", lambda x: app.close_music_player()]]
-    md_bg_color: (0, 0, 0.4, 1)
+    md_bg_color: root.background
 
 <SettingsScreen>
     name: 'settings_screen'
@@ -61,6 +67,7 @@
         MDToolbar:
             title: root.title
             elevation: 10
+            md_bg_color: app.toolbar_background
             left_action_items: [["keyboard-backspace", lambda x: app.change_screen('main_screen')]]
 
         ScrollView:
@@ -90,6 +97,7 @@
         Rectangle:
             pos: self.pos
             size: self.size
+
     ScrollView:
         size_hint: 1, 0.85
         pos_hint: {'center_x': .5, 'center_y': .5}
@@ -134,6 +142,32 @@
                 text: root.load_text
                 on_release: root.load(filechooser.path, filechooser.selection)
 
+<ThemeDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        
+        ScrollView:
+            size_hint: 1, 1
+            pos_hint: {'center_x': .5, 'center_y': .5}
+
+            GridLayout:
+                id: container
+                cols: 1
+                padding: 4
+                spacing: 4
+                height: self.minimum_height#sum(x.height+10 for x in self.children) + 96
+                size_hint: 1, None
+                do_scroll_x: False
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                id: closeBtn
+                text: root.cancel_text
+
 <UserTextLabel>
     size_hint: 1, None
     text_size: self.width, None
@@ -141,11 +175,12 @@
 
     canvas.before:
         Color:
-            rgba: 0.6, 0.33, 0.9, 0.7
+            rgba: root.background
         Rectangle:
             pos: self.pos
             size: self.size
 
+    color: root.textColor
     padding: 8, 4
     halign: 'right'
     valign: 'middle'
@@ -157,12 +192,12 @@
     
     canvas.before:
         Color:
-            rgba: 0.82, 0.82, 0.82, 0.7
+            rgba: root.background
         Rectangle:
             pos: self.pos
             size: self.size
 
-    color: 0, 0, 0, 1
+    color: root.textColor
     padding: 8, 4
 
 <PlainTextLabel>:

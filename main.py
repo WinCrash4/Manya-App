@@ -1,5 +1,6 @@
 from imports_and_classes import *
 
+JsonData.getDataFromFile("Settings", "data/settings.json")
 Builder.load_file('ui.kv')
 
 class ScrollScreen(Screen):
@@ -66,7 +67,6 @@ class ScrollScreen(Screen):
                 self.musicPlayer = MusicPlayer(id="music_player", music_name=answer["music_name"])
                 self.musicPlayer.init_audio()
                 self.add_widget(self.musicPlayer, index=0)
-                self.musicPlayer.plays()
 
             msg = AnswerTextLabel(text=answer["display"])
             container.add_widget(msg)
@@ -86,6 +86,10 @@ class ScrollScreen(Screen):
         popupWindow.open()
 
 class StartMenu(MDApp):
+    themeColors = JsonData.get("Settings")["theme_colors"][THEME]
+    toolbar_background = themeColors["App"]["toolbar_background"]
+    background = themeColors["App"]["background"]
+
     def __init__(self, **kvargs):
         super(StartMenu, self).__init__(**kvargs)    
         self.config = ConfigParser()
@@ -105,10 +109,8 @@ class StartMenu(MDApp):
         for child in main_screen.children:
             if child.id == "music_player":
                 main_screen.remove_widget(child)
-                print(child.get_elapsed_time())
                 child.plays(forcedStop = True)
                 child.unload_audio()
     
 if __name__ == '__main__':
-    JsonData.getDataFromFile("Settings", "data/settings.json")
     StartMenu().run()

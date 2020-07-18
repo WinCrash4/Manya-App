@@ -161,6 +161,8 @@ class Program:
                 status = "Облачно"
             elif status == "Rain":
                 status = "Дождь"
+            elif status == "Drizzle":
+                status = "Мелкий Дождь"
 
             # define word form
             temperature = round(temperature)

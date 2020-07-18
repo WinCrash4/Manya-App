@@ -1,0 +1,43 @@
+{
+    "information": {
+        "version": "0.11"
+    },
+    "user": {
+        "name": "Славик",
+        "last_start": "2020-07-17 02:33:33.084800",
+        "music_folder": "E:\\Desktop\\Мьюзик\\",
+        "theme": "Тёмная"
+    },
+    "theme_colors": {
+        "Стандартная": {
+            "App": {
+                "background": [1, 1, 1, 1],
+                "toolbar_background": [0.18, 0.66, 0.95, 1],
+                "music_player_background": [0, 0, 0.4, 1]
+            },
+            "UserTextLabel": {
+                "background": [0.6,0.33,0.9, 0.7],
+                "text_color": [0,0,0, 1]
+            },
+            "AnswerTextLabel": {
+                "background": [0.82, 0.82, 0.82, 0.7],
+                "text_color": [0, 0, 0, 1]
+            }
+        },
+        "Тёмная": {
+            "App": {
+                "background": [0.73, 0.73, 0.73, 1],
+                "toolbar_background": [0.18, 0.18, 0.18, 1],
+                "music_player_background": [0.18, 0.18, 0.18, 1]
+            },
+            "UserTextLabel": {
+                "background": [0.29, 0.39, 0.44, 1],
+                "text_color": [1, 1, 1, 1]
+            },
+            "AnswerTextLabel": {
+                "background": [0.35, 0.35, 0.35, 1],
+                "text_color": [1, 1, 1, 1]
+            }
+        }
+    }
+}

@@ -11,19 +11,24 @@ from kivy.uix.image import Image
 from kivy.config import ConfigParser, Config
 from kivy.factory import Factory    
 from kivy.core.window import Window
-from kivy.core.audio import SoundLoader,Sound
 from kivy.lang import Builder
 
 from kivymd.app import MDApp
-from kivymd.uix.list import TwoLineIconListItem
+from kivymd.uix.list import OneLineListItem, TwoLineIconListItem
 from kivymd.uix.toolbar import MDToolbar
 
 from program import *
 
 import threading
-import os
+import pygame
 
 
+## APP DATA ##
+JsonData.getDataFromFile("Settings", "data/settings.json")
+
+THEME = str(JsonData.get("Settings")["user"]["theme"])
+
+## CLASSES ##
 class PopupContent(FloatLayout):
     def fill_with_content(self):
         content = self.ids.content
@@ -60,7 +65,11 @@ class SettingsScreen(Screen):
             {"text": "Ваше имя",
             "secondaryText": str(JsonData.get("Settings")["user"]["name"]),
             "icon": "account",
-            "action": self.change_name}
+            "action": self.change_name},
+            {"text": "Цветовая тема",
+            "secondaryText": str(JsonData.get("Settings")["user"]["theme"]),
+            "icon": "palette-outline",
+            "action": self.show_change_theme_popup}
         ]
 
         if container.children:
@@ -76,17 +85,44 @@ class SettingsScreen(Screen):
     def show_load(self, ins):
         self.content = LoadDialog()
         
-        self.popup = Popup(title="Load file", content=self.content,
+        self.popup = Popup(title="Выбрать папку с музыкой", content=self.content,
                             size_hint=(0.9, 0.9))
         self.content.ids.closeBtn.bind(on_press = self.popup.dismiss)
         self.content.ids.loadBtn.bind(on_press = self.popup.dismiss)
         self.popup.open()
 
+    def show_change_theme_popup(self, ins):
+        self.content = ThemeDialog()
+        themes = [theme for theme in JsonData.get("Settings")["theme_colors"]]
+
+        for themeName in themes:
+            self.content.ids.container.add_widget(OneLineListItem(text=themeName, on_release=self.change_theme, theme_text_color="Custom",
+                                                                    text_color=(1,1,1,1)))
+        self.popup = Popup(title="Тема", content=self.content,
+                            size_hint=(0.9, 0.9))
+        self.content.ids.closeBtn.bind(on_press = self.popup.dismiss)
+        self.popup.open()
+
+    def change_theme(self, choosenTheme):
+        JsonData.get("Settings")["user"]["theme"] = choosenTheme.text
+        JsonData.saveDataToFile("Settings")
+        self.popup.dismiss
+        self.popup = Popup(title="Вы выбрали тему \"{}\". Изменения вступят в силу после перезапуска приложения".format(choosenTheme.text), 
+                            content=FloatLayout(), size_hint=(0.9, None))
+        self.popup.open()
+
     def change_name(self, ins):
         pass
 
+class ThemeDialog(FloatLayout):
+    cancel_text = StringProperty("Отмена")
+
+pygame.mixer.init()
 class MusicPlayer(MDToolbar):
     JsonData.getDataFromFile("Settings", "data/settings.json")
+
+    themeColors = JsonData.get("Settings")["theme_colors"][THEME]
+    background = themeColors["App"]["music_player_background"]
 
     id = StringProperty()
     player_visible = NumericProperty(1)
@@ -97,26 +133,22 @@ class MusicPlayer(MDToolbar):
     music_folder = str(JsonData.get("Settings")["user"]["music_folder"])
 
     def init_audio(self):
-        self.M = SoundLoader.load(self.music_folder + self.music_name)
+        self.musicModule = pygame.mixer.music
+        self.musicModule.load(self.music_folder + self.music_name)
+        self.musicModule.play()
 
     def change_player_state(self):
         self.player_state *= -1
         self.plays()
 
     def plays(self, forcedStop = False):
-        if self.M.state == 'stop' and not forcedStop:
-            self.M.play()
-            self.lastPosition = datetime.now()
-            self.M.seek(self.timeDelta.seconds)
+        if self.player_state == 1 and not forcedStop:
+            self.musicModule.unpause()
         else:
-            self.timeDelta += datetime.now() - self.lastPosition
-            self.M.stop()
-
-    def get_elapsed_time(self):
-        return self.M.get_pos()
+            self.musicModule.pause()
 
     def unload_audio(self):
-        self.M.unload()
+        self.musicModule.stop()
 
 class SettingsItem(TwoLineIconListItem):
     icon = StringProperty()
@@ -124,17 +156,17 @@ class SettingsItem(TwoLineIconListItem):
     secondaryText = StringProperty()
 
 class UserTextLabel(Label):
-    pass
+    themeColors = JsonData.get("Settings")["theme_colors"][THEME]["UserTextLabel"]
+    background = themeColors["background"]
+    textColor = themeColors["text_color"]
 
 class AnswerTextLabel(Label):
-    pass
+    themeColors = JsonData.get("Settings")["theme_colors"][THEME]["AnswerTextLabel"]
+    background = themeColors["background"]
+    textColor = themeColors["text_color"]
 
 class ScrollButton(Button):
     pass
 
 class PlainTextLabel(Label):
     pass
-
-
-## APP DATA ##
-JsonData.getDataFromFile("Settings", "data/settings.json")
