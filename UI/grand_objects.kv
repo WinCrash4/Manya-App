@@ -1,0 +1,39 @@
+<PopupContent>:
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    ScrollView:
+        size_hint: 1, 0.85
+        pos_hint: {'center_x': .5, 'center_y': .5}
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 1, None
+            height: self.minimum_height
+            GridLayout:
+                id: content
+                cols: 1
+                padding: 0
+                spacing: 0
+                height: self.minimum_height
+                size_hint: 1, None
+                do_scroll_x: False
+
+            BoxLayout:
+                orientation: 'vertical'
+                id: info
+                height: self.minimum_height
+                size_hint: 1, None
+
+<MusicPlayer>
+    id: root.id
+    size_hint: (1, 0.08)
+    height: self.height
+    title: root.music_name
+    left_action_items: [["pause" if root.player_state == 1 else "play", lambda x: root.change_player_state()]]
+    right_action_items: [["close", lambda x: app.close_music_player()]]
+    md_bg_color: root.background

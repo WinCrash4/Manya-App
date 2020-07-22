@@ -1,0 +1,42 @@
+
+<UserTextLabel>
+    size_hint: 1, None
+    text_size: self.width, None
+    size: self.texture_size
+
+    canvas.before:
+        Color:
+            rgba: root.background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    color: root.textColor
+    padding: 8, 4
+    halign: 'right'
+    valign: 'middle'
+
+<AnswerTextLabel>
+    size_hint: 1, None
+    text_size: root.width, None
+    size: self.texture_size
+    
+    canvas.before:
+        Color:
+            rgba: root.background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    color: root.textColor
+    padding: 8, 4
+
+<PlainTextLabel>:
+    size_hint: 1, None
+    text_size: root.width, None
+    size: self.texture_size
+    valign: 'middle'
+    halign: 'center'
+
+    color: 0, 0, 0, 1
+    padding: 8, 4

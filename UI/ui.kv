@@ -1,0 +1,79 @@
+#:import threading threading
+#:include UI/grand_objects.kv
+#:include UI/settings.kv
+#:include UI/items.kv
+
+
+<ManagerScreens@ScreenManager>:
+    canvas.before:
+        Color:
+            rgba: app.background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    MenuScreen:
+        id: men
+    ScrollScreen:
+        id: main_screen
+    SettingsScreen:
+        id: settings_screen
+
+<MenuScreen@Screen>:
+    name: "menu"
+
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            text: "Tap to start"
+            on_press: app.screen_manager.current = 'main_screen'
+
+<ScrollScreen>
+    name: "main_screen"
+
+    BoxLayout:
+        orientation: 'vertical'
+        MDToolbar:
+            title: "Manya"
+            elevation: 10
+            md_bg_color: app.toolbar_background
+            left_action_items: [["settings", lambda x: app.change_screen('settings_screen')]]
+            right_action_items: [["blank" if root.listening else "disc", lambda x: None], ["play" if not root.threadRunning else "help", lambda x: root.start_thread() if not root.threadRunning else root.get_help()]]
+
+        ScrollView:
+            size_hint: 1, 1
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            scroll_y: 0
+
+            GridLayout:
+                id: container
+                cols: 1
+                padding: 10
+                spacing: 10
+                height: self.minimum_height + 48 # + 48 because music player can hide some messages
+                size_hint: 1, None
+                do_scroll_x: False
+
+<SettingsScreen>
+    name: 'settings_screen'
+
+    BoxLayout:
+        orientation: 'vertical'
+        MDToolbar:
+            title: root.title
+            elevation: 10
+            md_bg_color: app.toolbar_background
+            left_action_items: [["keyboard-backspace", lambda x: app.change_screen('main_screen')]]
+
+        ScrollView:
+            size_hint: 1, 1
+            pos_hint: {'center_x': .5, 'center_y': .5}
+
+            GridLayout:
+                id: container
+                cols: 1
+                padding: 4
+                spacing: 4
+                height: self.minimum_height#sum(x.height+10 for x in self.children) + 96
+                size_hint: 1, None
+                do_scroll_x: False

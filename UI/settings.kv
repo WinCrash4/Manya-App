@@ -1,0 +1,55 @@
+
+<SettingsItem>:
+    text: root.text
+    secondary_text: root.secondaryText
+
+    IconLeftWidget:
+        icon: root.icon
+
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            path: "E:\\"    # DELETE LATER
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                id: closeBtn
+                text: root.cancel_text
+
+            Button:
+                id: loadBtn
+                text: root.load_text
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+<ThemeDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        
+        ScrollView:
+            size_hint: 1, 1
+            pos_hint: {'center_x': .5, 'center_y': .5}
+
+            GridLayout:
+                id: container
+                cols: 1
+                padding: 4
+                spacing: 4
+                height: self.minimum_height#sum(x.height+10 for x in self.children) + 96
+                size_hint: 1, None
+                do_scroll_x: False
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                id: closeBtn
+                text: root.cancel_text

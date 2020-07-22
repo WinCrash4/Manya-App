@@ -1,11 +1,10 @@
 from imports_and_classes import *
-
-JsonData.getDataFromFile("Settings", "data/settings.json")
-Builder.load_file('ui.kv')
+from time import sleep
 
 class ScrollScreen(Screen):
     _app = ObjectProperty()
     threadRunning = NumericProperty(0)
+    listening = NumericProperty(1)
     JsonData.getDataFromFile("Settings", "data/settings.json")
     JsonData.getDataFromFile("AppData", "data/appdata.json")
     JsonData.getDataFromFile("CommandsData", "data/commandsdata.json")
@@ -17,9 +16,9 @@ class ScrollScreen(Screen):
     
     def exec(self):
         self.speechPronunciation = SpeechPronunciation(voiceIndex=0)
-        self.speechRecognition = SpeechRecognition(deviceIndex=1)
-        self.logger = Logger(pathToFolder="logs/")
-        self.appData = JsonData.get("AppData")
+        speechRecognition = SpeechRecognition(deviceIndex=1)
+        logger = Logger(pathToFolder="logs/")
+        appData = JsonData.get("AppData")
 
         container = self.ids.container
 
@@ -34,22 +33,25 @@ class ScrollScreen(Screen):
         self.pronounce(greeting[1])
 
         while True:
-            speech = self.speechRecognition.recognize()
+            speech = speechRecognition.recognize()
             recognizedText = str(speech["text"]).lower()
 
             if speech["error"]:
-                self.logger.log(speech["text"])
+                logger.log(speech["text"])
+                self.listening = 0
+                sleep(0.2)
+                self.listening = 1
                 continue
 
             else:
-                self.logger.log("Recognized text: " + recognizedText)
+                logger.log("Recognized text: " + recognizedText)
                 msg = UserTextLabel(text=recognizedText.capitalize())
                 container.add_widget(msg)
 
-            for trash in self.appData["alias"]:
+            for trash in appData["alias"]:
                 recognizedText = recognizedText.replace(trash, "")
 
-            for trash in self.appData["tbr"]:
+            for trash in appData["tbr"]:
                 recognizedText = recognizedText.replace(trash, "")
 
             # Распознаём и выполняем комманду
@@ -64,9 +66,9 @@ class ScrollScreen(Screen):
                         child.plays(forcedStop = True)
                         child.unload_audio() 
                         
-                self.musicPlayer = MusicPlayer(id="music_player", music_name=answer["music_name"])
-                self.musicPlayer.init_audio()
-                self.add_widget(self.musicPlayer, index=0)
+                musicPlayer = MusicPlayer(id="music_player", music_name=answer["music_name"])
+                musicPlayer.init_audio()
+                self.add_widget(musicPlayer, index=0)
 
             msg = AnswerTextLabel(text=answer["display"])
             container.add_widget(msg)
@@ -84,6 +86,7 @@ class ScrollScreen(Screen):
         pattern.fill_with_content()
         popupWindow = Popup(title="Как работать с Маней", content=pattern, size_hint=(0.8, 0.8)) 
         popupWindow.open()
+
 
 class StartMenu(MDApp):
     themeColors = JsonData.get("Settings")["theme_colors"][THEME]

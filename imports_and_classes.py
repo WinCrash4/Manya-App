@@ -1,3 +1,8 @@
+import os, sys
+modulesPath = "Modules/"
+sys.path.append(os.path.dirname(modulesPath))
+
+
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
@@ -23,10 +28,15 @@ import threading
 import pygame
 
 
-## APP DATA ##
+## PROGRAM SETUP ##
+
 JsonData.getDataFromFile("Settings", "data/settings.json")
 
 THEME = str(JsonData.get("Settings")["user"]["theme"])
+
+Builder.load_file('UI/ui.kv')
+
+pygame.mixer.init()
 
 ## CLASSES ##
 class PopupContent(FloatLayout):
@@ -83,33 +93,33 @@ class SettingsScreen(Screen):
             container.add_widget(SettingsItem(text=text, secondaryText=secondaryText, icon=icon, on_release=action))
 
     def show_load(self, ins):
-        self.content = LoadDialog()
+        content = LoadDialog()
         
-        self.popup = Popup(title="Выбрать папку с музыкой", content=self.content,
+        self.popup = Popup(title="Выбрать папку с музыкой", content=content,
                             size_hint=(0.9, 0.9))
-        self.content.ids.closeBtn.bind(on_press = self.popup.dismiss)
-        self.content.ids.loadBtn.bind(on_press = self.popup.dismiss)
+        content.ids.closeBtn.bind(on_press = self.popup.dismiss)
+        content.ids.loadBtn.bind(on_press = self.popup.dismiss)
         self.popup.open()
 
     def show_change_theme_popup(self, ins):
-        self.content = ThemeDialog()
+        content = ThemeDialog()
         themes = [theme for theme in JsonData.get("Settings")["theme_colors"]]
 
         for themeName in themes:
-            self.content.ids.container.add_widget(OneLineListItem(text=themeName, on_release=self.change_theme, theme_text_color="Custom",
+            content.ids.container.add_widget(OneLineListItem(text=themeName, on_release=self.change_theme, theme_text_color="Custom",
                                                                     text_color=(1,1,1,1)))
-        self.popup = Popup(title="Тема", content=self.content,
+        self.popup = Popup(title="Тема", content=content,
                             size_hint=(0.9, 0.9))
-        self.content.ids.closeBtn.bind(on_press = self.popup.dismiss)
+        content.ids.closeBtn.bind(on_press = self.popup.dismiss)
         self.popup.open()
 
     def change_theme(self, choosenTheme):
         JsonData.get("Settings")["user"]["theme"] = choosenTheme.text
         JsonData.saveDataToFile("Settings")
         self.popup.dismiss
-        self.popup = Popup(title="Вы выбрали тему \"{}\". Изменения вступят в силу после перезапуска приложения".format(choosenTheme.text), 
+        popup = Popup(title="Вы выбрали тему \"{}\". Изменения вступят в силу после перезапуска приложения".format(choosenTheme.text), 
                             content=FloatLayout(), size_hint=(0.9, None))
-        self.popup.open()
+        popup.open()
 
     def change_name(self, ins):
         pass
@@ -117,7 +127,6 @@ class SettingsScreen(Screen):
 class ThemeDialog(FloatLayout):
     cancel_text = StringProperty("Отмена")
 
-pygame.mixer.init()
 class MusicPlayer(MDToolbar):
     JsonData.getDataFromFile("Settings", "data/settings.json")
 
@@ -128,8 +137,6 @@ class MusicPlayer(MDToolbar):
     player_visible = NumericProperty(1)
     music_name = StringProperty()
     player_state = NumericProperty(1)
-    lastPosition = 0
-    timeDelta = timedelta(seconds=0)
     music_folder = str(JsonData.get("Settings")["user"]["music_folder"])
 
     def init_audio(self):
