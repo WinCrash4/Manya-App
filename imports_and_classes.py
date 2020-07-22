@@ -27,7 +27,6 @@ from program import *
 import threading
 import pygame
 
-
 ## PROGRAM SETUP ##
 
 JsonData.getDataFromFile("Settings", "data/settings.json")
@@ -43,11 +42,11 @@ class PopupContent(FloatLayout):
     def fill_with_content(self):
         content = self.ids.content
         content.add_widget(PlainTextLabel(text="Для начала - поздоровайтесь с Маней!"))
-        content.add_widget(Image(source='data/images/hello.jpg',size_hint_y=None))
+        content.add_widget(Image(source='data/images/hello.jpg', size_hint_y=None))
         content.add_widget(PlainTextLabel(text="Список всех команд вы можете получить, просто попросив об этом Маню:"))
-        content.add_widget(Image(source='data/images/commands.jpg',size_hint_y=None))
+        content.add_widget(Image(source='data/images/commands.jpg', size_hint_y=None))
         content.add_widget(PlainTextLabel(text="В настройках вы можете настроить работу некоторых команд для дальнейшей работы с ними."))
-        content.add_widget(Image(source='data/images/settings.jpg',size_hint_y=None))
+        content.add_widget(Image(source='data/images/settings.jpg', size_hint_y=None))
 
         info = self.ids.info
         info.add_widget(PlainTextLabel(text="[color=7d7d7d]Маня - часть проекта \"Интегрируемая система голосового управления\".\n\
